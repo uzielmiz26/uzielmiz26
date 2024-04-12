@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del DJ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #FF6B6B, #4361EE, #32CD32);
+            background-size: 600% 600%;
+            animation: gradientBackground 10s ease infinite;
+        }
+
+        @keyframes gradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            width: 50%;
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo semi-transparente */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Sombra */
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .accept-btn {
+            background-color: #2ecc71;
+        }
+
+        .reject-btn {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel del DJ</h1>
+        <h2>Solicitudes de Canciones Pendientes</h2>
+        <ul id="songRequests"></ul>
+    </div>
+    <div class="container">
+        <h2>Canciones Aceptadas</h2>
+        <ul id="acceptedList"></ul>
+    </div>
+
+    <script>
+        async function fetchRequests() {
+            const response = await fetch('/dj-requests');
+            const data = await response.json();
+            const requests = data.requests;
+
+            const songRequests = document.getElementById('songRequests');
+            songRequests.innerHTML = '';
+
+            requests.forEach((request, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = request;
+
+                const buttonContainer = document.createElement('div');
+
+                const acceptButton = document.createElement('button');
+                acceptButton.textContent = 'Aceptar';
+                acceptButton.className = 'accept-btn';
+                acceptButton.addEventListener('click', () => respondToRequest(index, 'accept'));
+
+                const rejectButton = document.createElement('button');
+                rejectButton.textContent = 'Rechazar';
+                rejectButton.className = 'reject-btn';
+                rejectButton.addEventListener('click', () => respondToRequest(index, 'reject'));
+
+                buttonContainer.appendChild(acceptButton);
+                buttonContainer.appendChild(rejectButton);
+
+                listItem.appendChild(buttonContainer);
+                songRequests.appendChild(listItem);
+            });
+        }
+
+        async function respondToRequest(index, response) {
+            const responseData = await fetch(`/dj-response/${index}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ response })
+            });
+
+            const data = await responseData.json();
+            alert(data.message);
+
+            // Actualizar la lista de solicitudes después de responder
+            fetchRequests();
+
+            if (response === 'accept') {
+                // Si la canción fue aceptada, moverla a la lista de aceptadas y guardar en almacenamiento local
+                const songRequests = document.getElementById('songRequests');
+                const listItem = songRequests.children[index];
+                const acceptedList = document.getElementById('acceptedList');
+                acceptedList.appendChild(listItem);
+
+                // Quitar botones de aceptar y rechazar
+                listItem.querySelector('.accept-btn').remove();
+                listItem.querySelector('.reject-btn').remove();
+
+                // Agregar botón de listo
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'listo';
+                deleteButton.className = 'delete-btn';
+                deleteButton.addEventListener('click', () => removeFromAcceptedList(listItem));
+                listItem.appendChild(deleteButton);
+
+                // Guardar en el almacenamiento local
+                saveToLocalStorage();
+            }
+        }
+
+        // Función para guardar los datos en el almacenamiento local
+        function saveToLocalStorage() {
+            const songRequests = document.getElementById('songRequests').innerHTML;
+            const acceptedList = document.getElementById('acceptedList').innerHTML;
+            localStorage.setItem('songRequests', songRequests);
+            localStorage.setItem('acceptedList', acceptedList);
+        }
+
+        // Función para cargar los datos desde el almacenamiento local al cargar la página
+        function loadFromLocalStorage() {
+            const songRequests = localStorage.getItem('songRequests');
+            const acceptedList = localStorage.getItem('acceptedList');
+            document.getElementById('songRequests').innerHTML = songRequests;
+            document.getElementById('acceptedList').innerHTML = acceptedList;
+        }
+
+        // Función para eliminar canciones de la lista de aceptadas
+        function removeFromAcceptedList(listItem) {
+            const acceptedList = document.getElementById('acceptedList');
+            acceptedList.removeChild(listItem);
+            saveToLocalStorage(); // Actualizar el almacenamiento local después de eliminar
+        }
+
+        // Cargar las solicitudes al cargar la página
+        fetchRequests();
+
+        // Cargar los datos desde el almacenamiento local
+        loadFromLocalStorage();
+    </script>
+</body>
+</html>
+

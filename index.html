@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Canciones</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column; /* Para colocar el título encima de la barra de búsqueda */
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+            animation: changeColor 10s infinite;
+            font-family: Arial, sans-serif; /* Tipografía general */
+            position: relative; /* Permite posicionar elementos hijos relativamente */
+        }
+
+        @keyframes changeColor {
+            0% { background-color: #FF5733; }
+            25% { background-color: #C70039; }
+            50% { background-color: #900C3F; }
+            75% { background-color: #581845; }
+            100% { background-color: #FF5733; }
+        }
+
+        .dj-console {
+            position: absolute; /* Posición absoluta para colocarla sobre el título */
+            top: 50%; /* Centrado verticalmente */
+            left: 50%; /* Centrado horizontalmente */
+            transform: translate(-50%, -50%); /* Centrar completamente */
+            width: 100px; /* Tamaño del icono de la consola de DJ */
+            height: auto;
+        }
+
+        .headphones-icon {
+            position: absolute; /* Posición absoluta para colocarla sobre el título */
+            top: calc(50% - 100px); /* Centrado verticalmente con un desplazamiento hacia arriba */
+            left: 50%; /* Centrado horizontalmente */
+            transform: translateX(-50%); /* Centrar horizontalmente */
+            width: 80px; /* Tamaño del icono de los audífonos */
+            height: auto;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 36px; /* Tamaño del título */
+            margin-bottom: 10px; /* Espacio entre el título y el subtítulo */
+            text-align: center; /* Centrar el texto */
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 18px; /* Tamaño del subtítulo */
+            margin-bottom: 20px; /* Espacio entre el subtítulo y la barra de búsqueda */
+            text-align: center; /* Centrar el texto */
+        }
+
+        form {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border-radius: 20px;
+            background-color: #fff;
+            padding: 10px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            border-radius: 20px;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        .airplane-icon {
+            width: 20px;
+            height: auto;
+            fill: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenido a la Página de Solicitud de Canciones</h1>
+    <h2>Hacé tu propia fiesta! Pedime la música que quieras y estate atento, puede que la escuches!</h2>
+    <form>
+        <input type="text" id="songName" placeholder="Nombre de la Canción">
+        <button onclick="requestSong()">
+            <svg class="airplane-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.05 3.54a1.5 1.5 0 0 0-2.12 0L14 8.64V6a1 1 0 0 0-2 0v2.64L5.07 3.54a1.5 1.5 0 0 0-2.12 2.12L9.38 12 3.94 17.44a1.5 1.5 0 0 0 0 2.12l.06.06a1.5 1.5 0 0 0 2.12 0L12 13.38l4.44 4.44a1.5 1.5 0 0 0 2.12 0l.06-.06a1.5 1.5 0 0 0 0-2.12L14.62 12l4.44-4.44a1.5 1.5 0 0 0 0-2.02z"/>
+            </svg>
+        </button>
+    </form>
+
+    <script>
+        async function requestSong() {
+            const songName = document.getElementById("songName").value;
+
+            const response = await fetch('/request-song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ songName })
+            });
+
+            const data = await response.json();
+            alert(data.message);
+        }
+    </script>
+</body>
+</html>
+
